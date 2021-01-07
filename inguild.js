@@ -75,6 +75,13 @@ exports.start = async function (message, client, prefix, args) {
         reactionroles.run(client, message, args);
     }
 
+    if (message.content.toLowerCase().startsWith(prefix + "deletereactionroles") ||
+        message.content.toLowerCase().startsWith(prefix + "delreactionroles") ||
+        message.content.toLowerCase().startsWith(prefix + "delrs") ||
+        message.content.toLowerCase().startsWith(prefix + "deleters")) {
+        reactionroles.delrs(client, message, args);
+    }
+
 
     if (message.channel.id == "785908144941039656") {
         autoreact.proof(message)

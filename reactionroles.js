@@ -12,9 +12,12 @@ exports.run = async (client, message, args) => {
     let usedEmojiRoles = [];
     let usedChannel = null;
     let MESSAGES = 0;
+
+    message.channel.send("You can always cancel the set-up process by typing `cancel` in this channel!");
     await message.channel.send({ embed: { color: "BLUE", description: "What do you want the message to say?" } })
         .then(msg => {
             client.on('message', async message => {
+                if (message.content.toLowerCase().startsWith("cancel")) return message.reply("canceld the set-up process!"), MESSAGES = 7;
                 if (MESSAGES == 0) {
                     if (msg.channel == message.channel) {
                         if (message.author == controler) {
@@ -197,25 +200,38 @@ exports.collecters = async client => {
                         };
                         const collector = message.createReactionCollector(filter);
 
-                        collector.on('collect', (reaction, user) => {
+                        await collector.on('collect', (reaction, user) => {
                             for (let i = 0; file.reactionRoles.length > i; i++) {
                                 if (reaction.emoji.name == file.reactionRoles[i].emoji) {
-                                    try {
-                                        let role = reaction.message.guild.roles.cache.get(file.reactionRoles[i].role);
-                                        let member = guild.members.cache.get(user.id)
-                                        member.roles.add(role);
-                                    } catch (err) {
-                                        console.log(err)
+                                    let member = guild.members.cache.get(user.id);
+
+                                    if (!member.roles.cache.find(role => role.id == file.reactionRoles[i].role)) {
+                                        try {
+                                            let role = reaction.message.guild.roles.cache.get(file.reactionRoles[i].role);
+                                            member.roles.add(role);
+                                            reaction.users.remove(member.id);
+                                        } catch (err) {
+                                            console.log(err)
+                                        };
                                     }
+                                    else if (member.roles.cache.find(role => role.id == file.reactionRoles[i].role)) {
+                                        try {
+                                            let role = reaction.message.guild.roles.cache.get(file.reactionRoles[i].role);
+                                            member.roles.remove(role);
+                                            reaction.users.remove(member.id);
+                                        } catch (err) {
+                                            console.log(err)
+                                        };
+                                    };
                                 };
                             };
                         });
-                    }
-                }
+                    };
+                };
             });
         });
     });
-}
+};
 
 
 async function messageVizulaizer(usedContent, usedEmbed, usedColorEmbed, msg) {
@@ -269,14 +285,46 @@ async function runCol(msg, id) {
     collector.on('collect', (reaction, user) => {
         for (let i = 0; file.reactionRoles.length > i; i++) {
             if (reaction.emoji.name == file.reactionRoles[i].emoji) {
-                try {
-                    let role = reaction.message.guild.roles.cache.get(file.reactionRoles[i].role);
-                    let member = guild.members.cache.get(user.id)
-                    member.roles.add(role);
-                } catch (err) {
-                    console.log(err)
+                let member = guild.members.cache.get(user.id);
+
+                if (!member.roles.cache.find(role => role.id == file.reactionRoles[i].role)) {
+                    try {
+                        let role = reaction.message.guild.roles.cache.get(file.reactionRoles[i].role);
+                        member.roles.add(role);
+                        reaction.users.remove(member.id);
+                    } catch (err) {
+                        console.log(err)
+                    };
                 }
+                else if (member.roles.cache.find(role => role.id == file.reactionRoles[i].role)) {
+                    try {
+                        let role = reaction.message.guild.roles.cache.get(file.reactionRoles[i].role);
+                        member.roles.remove(role);
+                        reaction.users.remove(member.id);
+                    } catch (err) {
+                        console.log(err)
+                    };
+                };
             };
         };
     });
 }
+
+
+exports.delrs = async (client, message, args) => {
+    if (!args[0]) return message.channel.send('pls provide a reaction role message ID!');
+    const guild = message.guild;
+    if (fs.existsSync(`./rearoles/${guild.name} ${args[0]}.json`)) {
+        guild.channels.cache.forEach(async channel => {
+            if (channel.type == 'text') {
+                let msg = await channel.messages.fetch(args[0]).catch(err => { });
+                if (!msg) return;
+                fs.unlinkSync(`./rearoles/${guild.name} ${msg.id}.json`);
+                msg.delete();
+                return message.channel.send("Successfuly removed the reaction role message!");
+            }
+        })
+    } else {
+        return message.channel.send('The given message id is not recognized as a reaction role message id!');
+    }
+};
