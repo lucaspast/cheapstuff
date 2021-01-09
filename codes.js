@@ -4,6 +4,7 @@ const fs = require('fs');
 module.exports = {
     name: "codes",
     run: async (client, message, args) => {
+        console.log(args, message.content)
         if (!message.member.roles.cache.some(role => role.id === '785869454603976724') && !message.member.roles.cache.some(role => role.id === '787444381861806120')) {
             return message.channel.send('you dont have the perms to do that!');
         }
@@ -14,13 +15,13 @@ module.exports = {
             if (isNaN(args[1])) {
                 return message.channel.send('the command was wrong!\n.codes <type> <number>');
             } else {
-                fs.readdirSync(`./codes/${args[0]}`, async amount => {
-                    if (args[1] > amount.length) return message.channel.send(`We only got ${amount.length} ${args[0]} code files!`);
-                    return message.channel.send({ files: [`./codes/${args[0]}/${args[0]} ${args[1]}.txt`] }).catch(err => {
+                let amount = fs.readdirSync(`./codes/${args[0]}`)
+                if (args[1] > amount.length) return message.channel.send(`We only got ${amount.length} ${args[0]} code files!`);
+                return message.channel.send({ files: [`./codes/${args[0]}/${args[0]} ${args[1]}.txt`] })
+                    .catch(err => {
                         message.channel.send('oops something went wrong, try again later.');
                         console.error(err);
                     })
-                })
             }
         }
     }
