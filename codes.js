@@ -4,7 +4,6 @@ const fs = require('fs');
 module.exports = {
     name: "codes",
     run: async (client, message, args) => {
-        console.log(args, message.content)
         if (!message.member.roles.cache.some(role => role.id === '785869454603976724') && !message.member.roles.cache.some(role => role.id === '787444381861806120')) {
             return message.channel.send('you dont have the perms to do that!');
         }
